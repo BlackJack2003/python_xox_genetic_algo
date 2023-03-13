@@ -5,10 +5,10 @@ import random
 #Create mutate
 
 class player:
-    def __init__(self,moves:np.ndarray=None):
+    def __init__(self,moves:np.ndarray=None,u=0.05):
         self.moves = moves if moves is not None else np.random.randint(0,9,dtype=int,size=5)
         self.pos = 0
-        self.score=0
+        self.u =u
     
     def play(self):
         self.pos+=1
@@ -16,7 +16,7 @@ class player:
 
 class board:
     def __init__(self,pls:list):
-        self.board = np.zeros((9,),dtype=np.int8)
+        self.board = np.zeros((9,),dtype=int)
         self.pls=pls
         self.nfree=0
 
@@ -43,28 +43,31 @@ class board:
         cpn = 0
         while self.nfree < 9:
             k = self.pls[cpn].play()
-            if self.board[k]!=0:
+            if self.board[k]!=-1:
                 return (self.pls[int(not cpn)],self.nfree)
             else:
-                self.board[k]=cpn
-            if self.check_win(cpn):
+                self.board[k]=cpn+1
+            if self.check_win(cpn+1):
                 return self.pls[cpn]
             cpn = int(not cpn)
             self.nfree+=1
         return (self.pls[1],self.nfree)
 
-def make_baby(p1:player,p2:player)->player:
+def make_baby(p1:player,p2:player,s1:int,s2:int)->player:
     s=[]
     for i in range(5):
         if random.randint(0,5)%2==0:
             s.append(p1.moves[i])
         else:
             s.append(p2.moves[i])
-    return player(moves=np.array(s))
+    uc=(1-((s1+s2)/18))
+    return player(moves=np.array(s),u=uc)
 
 
 def mutate(p1:player)->player:
-    return p1
+    k = random.randint(101)
+    if k <=p1.u*100:
+        p1.moves[random.randint(0,5)] = random.randint(0,9)
 
 def get_games(n:int)->list:
     lol = []
@@ -81,7 +84,7 @@ def get_games(n:int)->list:
 
 games= get_games(16)
 
-for i in range(10):
+for i in range(100):
     wins_scores = []
     for p in games:
         (w,s) = p.start()
@@ -91,7 +94,7 @@ for i in range(10):
     games=[]
     for i in range(5):
         for j in range(4):
-            yo.append(make_baby(wins_scores[i][0],wins_scores[j][0]))
+            yo.append(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1]))
     nyo = len(yo)
     for i in range(nyo):
         games.append(board([yo[i],yo[nyo-i-1]]))
