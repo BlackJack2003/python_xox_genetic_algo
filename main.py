@@ -8,7 +8,7 @@ import random
 
 class player:
     def __init__(self,moves:np.ndarray=None,u=0.05):
-        self.moves = moves if moves is not None else np.random.randint(0,9,dtype=int,size=5)
+        self.moves = moves if moves is not None else np.random.randint(0,8,dtype=int,size=5)
         self.pos = 0
         self.u =u
     
@@ -45,12 +45,12 @@ class board:
         cpn = 0
         while self.nfree < 9:
             k = self.pls[cpn].play()
-            if self.board[k]!=-1:
+            if self.board[k]!=0:
                 return (self.pls[int(not cpn)],self.nfree)
             else:
                 self.board[k]=cpn+1
             if self.check_win(cpn+1)==cpn+1:
-                return self.pls[cpn]
+                return self.pls[cpn],self.nfree
             cpn = int(not cpn)
             self.nfree+=1
         return (self.pls[1],self.nfree)
@@ -87,13 +87,13 @@ def get_games(n:int)->list:
 games= get_games(16)
 pgames=games
 for i in range(100):
+    #print(games[0].board,'#',games[0].pls[0].pos)
     wins_scores = []
     for p in games:
         (w,s) = p.start()
         wins_scores.append([w,s])
     wins_scores.sort(key=lambda x: x[1])
     yo=[]
-    pgames=games
     games=[]
     for i in range(5):
         for j in range(4):
@@ -101,6 +101,3 @@ for i in range(100):
     nyo = len(yo)
     for i in range(nyo):
         games.append(board([yo[i],yo[nyo-i-1]]))
-print(pgames[0].board)
-for i in wins_scores:
-    print(i[1],"#",i[0].moves)
