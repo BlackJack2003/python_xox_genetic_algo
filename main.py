@@ -1,3 +1,6 @@
+#python genetic algorith for xox game
+#by blackjack2003
+
 import numpy as np
 import numba
 import random
