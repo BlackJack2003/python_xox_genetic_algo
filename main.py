@@ -2,7 +2,6 @@
 #by blackjack2003
 
 import numpy as np
-import numba
 import random
 
 #Create mutate
