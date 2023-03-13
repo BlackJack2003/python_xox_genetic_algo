@@ -11,14 +11,17 @@ class player:
         self.moves = moves if moves is not None else np.random.randint(0,8,dtype=int,size=5)
         self.pos = 0
         self.u =u
+        self.movesplayed=[]
     
     def play(self):
+        k = self.moves[self.pos]
         self.pos+=1
-        return self.moves[self.pos-1]
+        self.movesplayed.append([self.pos-1,k])
+        return k
 
 class board:
     def __init__(self,pls:list):
-        self.board = np.zeros((9,),dtype=int)
+        self.board=np.zeros(9,dtype=int)
         self.pls=pls
         self.nfree=0
 
@@ -45,13 +48,14 @@ class board:
         cpn = 0
         while self.nfree < 9:
             k = self.pls[cpn].play()
-            if self.board[k]!=0:
-                return (self.pls[int(not cpn)],self.nfree)
-            else:
+            if self.board[k]==0:
                 self.board[k]=cpn+1
+            else:
+                return (self.pls[int(not cpn)],self.nfree)
+                
             if self.check_win(cpn+1)==cpn+1:
                 return self.pls[cpn],self.nfree
-            cpn = int(not cpn)
+            cpn = 0 if cpn else 1
             self.nfree+=1
         return (self.pls[1],self.nfree)
 
@@ -99,5 +103,8 @@ for i in range(100):
         for j in range(4):
             yo.append(mutate(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1])))
     nyo = len(yo)
-    for i in range(nyo):
-        games.append(board([yo[i],yo[nyo-i-1]]))
+    for i in range(0,nyo,2):
+        games.append(board([yo[i],yo[i+1]]))
+
+for i in wins_scores:
+    print(i[1],"#",i[0].moves)
