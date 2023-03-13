@@ -34,7 +34,7 @@ class board:
         for i in range(len(win_cond)):
             f=True
             for j in range(3):
-                if not win_cond[i][j]==p:
+                if not self.board[win_cond[i][j]]==p:
                     f = False
                     break
             if f:
@@ -49,7 +49,7 @@ class board:
                 return (self.pls[int(not cpn)],self.nfree)
             else:
                 self.board[k]=cpn+1
-            if self.check_win(cpn+1):
+            if self.check_win(cpn+1)==cpn+1:
                 return self.pls[cpn]
             cpn = int(not cpn)
             self.nfree+=1
@@ -67,15 +67,15 @@ def make_baby(p1:player,p2:player,s1:int,s2:int)->player:
 
 
 def mutate(p1:player)->player:
-    k = random.randint(101)
+    k = random.randint(0,101)
     if k <=p1.u*100:
-        p1.moves[random.randint(0,5)] = random.randint(0,9)
+        p1.moves[random.randint(0,4)] = random.randint(0,8)
+    return p1
 
 def get_games(n:int)->list:
     lol = []
     for i in range(n*2):
         m = player()
-        print(m.moves)
         lol.append(m)
     games = []
     j=0
@@ -85,7 +85,7 @@ def get_games(n:int)->list:
     return games
 
 games= get_games(16)
-
+pgames=games
 for i in range(100):
     wins_scores = []
     for p in games:
@@ -93,13 +93,14 @@ for i in range(100):
         wins_scores.append([w,s])
     wins_scores.sort(key=lambda x: x[1])
     yo=[]
+    pgames=games
     games=[]
     for i in range(5):
         for j in range(4):
-            yo.append(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1]))
+            yo.append(mutate(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1])))
     nyo = len(yo)
     for i in range(nyo):
         games.append(board([yo[i],yo[nyo-i-1]]))
-
+print(pgames[0].board)
 for i in wins_scores:
     print(i[1],"#",i[0].moves)
