@@ -3,8 +3,8 @@
 
 import numpy as np
 import random
-
-#Create mutate
+import numba
+from numba import jit
 
 class player:
     def __init__(self,moves:np.ndarray=None,u=0.05):
@@ -43,7 +43,7 @@ class board:
             if f:
                 return p
         return 0
-    
+
     def start(self)->tuple:
         cpn = 0
         while self.nfree < 9:
@@ -51,13 +51,13 @@ class board:
             if self.board[k]==0:
                 self.board[k]=cpn+1
             else:
-                return (self.pls[int(not cpn)],self.nfree)
+                return np.array([self.pls[int(not cpn)],self.nfree])
                 
             if self.check_win(cpn+1)==cpn+1:
-                return self.pls[cpn],self.nfree
+                return np.array([self.pls[cpn],self.nfree])
             cpn = 0 if cpn else 1
             self.nfree+=1
-        return (self.pls[1],self.nfree)
+        return np.array([self.pls[1],self.nfree])
 
 def make_baby(p1:player,p2:player,s1:int,s2:int)->player:
     s=[]
@@ -88,15 +88,15 @@ def get_games(n:int)->list:
         j+=2
     return games
 
-games= get_games(16)
-pgames=games
-for i in range(100):
-    #print(games[0].board,'#',games[0].pls[0].pos)
+games= get_games(20)
+
+for i in range(1000):
     wins_scores = []
     for p in games:
-        (w,s) = p.start()
+        w,s = p.start()[0],p.start()[1]
         wins_scores.append([w,s])
     wins_scores.sort(key=lambda x: x[1])
+    print(wins_scores[0][1],"#",wins_scores[0][0].moves,'#',wins_scores[0][0].u)
     yo=[]
     games=[]
     for i in range(5):
@@ -104,7 +104,7 @@ for i in range(100):
             yo.append(mutate(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1])))
     nyo = len(yo)
     for i in range(0,nyo,2):
-        games.append(board([yo[i],yo[i+1]]))
+        games.append(board([yo[i],yo[nyo-(i+1)]]))
 
 for i in wins_scores:
-    print(i[1],"#",i[0].moves)
+    print('#',i[1],"#",i[0].moves,'#',i[0].u)
