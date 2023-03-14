@@ -4,6 +4,7 @@
 import numpy as np
 import random
 import numba
+import os
 from numba import jit
 
 class player:
@@ -88,23 +89,26 @@ def get_games(n:int)->list:
         j+=2
     return games
 
-games= get_games(20)
 
-for i in range(1000):
-    wins_scores = []
-    for p in games:
-        w,s = p.start()[0],p.start()[1]
-        wins_scores.append([w,s])
-    wins_scores.sort(key=lambda x: x[1])
-    print(wins_scores[0][1],"#",wins_scores[0][0].moves,'#',wins_scores[0][0].u)
-    yo=[]
-    games=[]
-    for i in range(5):
-        for j in range(4):
-            yo.append(mutate(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1])))
-    nyo = len(yo)
-    for i in range(0,nyo,2):
-        games.append(board([yo[i],yo[nyo-(i+1)]]))
+if __name__=="__main__":
+    os.system("clc")
+    games= get_games(20)
 
-for i in wins_scores:
-    print('#',i[1],"#",i[0].moves,'#',i[0].u)
+    for i in range(1000):
+        wins_scores = []
+        for p in games:
+            w,s = p.start()[0],p.start()[1]
+            wins_scores.append([w,s])
+        wins_scores.sort(key=lambda x: x[1])
+        print(wins_scores[0][1],"#",wins_scores[0][0].moves,'#',wins_scores[0][0].u)
+        yo=[]
+        games=[]
+        for i in range(5):
+            for j in range(4):
+                yo.append(mutate(make_baby(wins_scores[i][0],wins_scores[j][0],wins_scores[i][1],wins_scores[j][1])))
+        nyo = len(yo)
+        for i in range(0,nyo,2):
+            games.append(board([yo[i],yo[nyo-(i+1)]]))
+
+    for i in wins_scores:
+        print('#',i[1],"#",i[0].moves,'#',i[0].u)
