@@ -15,12 +15,19 @@ class apple:
         self.y = 15
 
 class board:
+
+    def pepe(self):
+        m,k = random.randint(0,19),random.randint(0,19)
+        while self.board[m][k]!=0:
+            m,k = random.randint(0,19),random.randint(0,19)
+        return m,k
+
     def __init__(self,fpos=None):
         self.h = player()
         self.board = np.zeros((20,20))
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy]=1
-        self.getfrp = lambda:(random.randint(0,19),random.randint(0,19)) if fpos==None else lambda :(fpos.pop(0))
+        self.getfrp = self.pepe() if fpos==None else lambda :(fpos.pop(0))
         self.fx,self.fy = self.getfrp()
         self.board[self.fx][self.fy]=2
         self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
