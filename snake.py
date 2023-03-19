@@ -2,8 +2,8 @@ import numpy as np
 import random
 import time
 
-size=84
-rf = int(size*(2**1/2))
+size= 40
+rf = 2*size -1
 
 
 class player:
@@ -26,9 +26,10 @@ class snake_board:
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=1
         self.getfrp = lambda:self.pepe() if fpos==None else lambda :(fpos.pop(0))
-        self.fx,self.fy = self.getfrp()
+        self.fx,self.fy = size//2,size//2
         self.board[self.fx][self.fy][1]=1
-        self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
+        self.ps=int(np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2))
+        self.size=1
 
     def check_death(self)->bool:
         cx = self.h.cx
@@ -47,6 +48,7 @@ class snake_board:
             last = self.segs[-1]
             self.board[last.px][last.py][0]=1
             self.segs.append(player(last.px,last.py))
+            self.size+=1
         return m
     
     #0 up,1 down 2 left 3 right
@@ -68,7 +70,7 @@ class snake_board:
         self.board[self.h.cx][self.h.cx][0]=1
         self.h.cx+=dirx
         self.h.cy+=diry
-        self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
+        self.ps=int(np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2))
         #check for border collision
         if self.h.cx>size-1:
             self.h.cx=0
@@ -97,7 +99,7 @@ class snake_board:
         d = self.check_death()
         if d:
             rew = 1
-        return self.board,rew,bool(len(self.segs)>=10),0
+        return self.board,rew,d,self.size
     
     def reset(self):
         self.h = player()
@@ -105,7 +107,8 @@ class snake_board:
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=1
         self.getfrp = lambda:self.pepe()
-        self.fx,self.fy = self.getfrp()
+        self.fx,self.fy = size//2,size//2
         self.board[self.fx][self.fy][1]=2
-        self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
-        return self
+        self.ps=int(np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2))
+        self.size=1
+        return self.board

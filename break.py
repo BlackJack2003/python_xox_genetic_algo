@@ -26,13 +26,13 @@ def create_q_model():
     # Network defined by the Deepmind paper
     inputs = layers.Input(shape=(snake.size,snake.size,2,))
     # Convolutions on the frames on the screen
-    layer1 = layers.Conv2D(32, 8, strides=4, activation="relu")(inputs)
-    layer2 = layers.Conv2D(64, 4, strides=2, activation="relu")(layer1)
-    layer3 = layers.Conv2D(64, 3, strides=1, activation="relu")(layer2)
+    layer1 = layers.Conv2D(16, 8, strides=4, activation="relu")(inputs)
+    layer2 = layers.Conv2D(32, 4, strides=2, activation="relu")(layer1)
+    layer3 = layers.Conv2D(32, 3, strides=1, activation="relu")(layer2)
 
     layer4 = layers.Flatten()(layer3)
 
-    layer5 = layers.Dense(512, activation="relu")(layer4)
+    layer5 = layers.Dense(256, activation="relu")(layer4)
     action = layers.Dense(num_actions, activation="linear")(layer5)
 
     return keras.Model(inputs=inputs, outputs=action)
@@ -60,16 +60,16 @@ running_reward = 0
 episode_count = 0
 frame_count = 0
 # Number of frames to take random action and observe output
-epsilon_random_frames = 5000
+epsilon_random_frames = 2000
 # Number of frames for exploration
-epsilon_greedy_frames = 10000
+epsilon_greedy_frames = 3000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 10000
+max_memory_length = 1000
 # Train the model after 4 actions
 update_after_actions = 4
 # How often to update the target network
-update_target_network = 10000
+update_target_network = 1000
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
 
@@ -100,7 +100,7 @@ while True:  # Run until solved
         epsilon = max(epsilon, epsilon_min)
 
         # Apply the sampled action in our environment
-        state_next, reward, done, _ = env.step(action)
+        state_next, reward, done, snake_size = env.step(action)
         state_next = np.array(state_next)
 
         episode_reward += reward
@@ -130,7 +130,7 @@ while True:  # Run until solved
 
             # Build the updated Q-values for the sampled future states
             # Use the target model for stability
-            future_rewards = model_target.predict(state_next_sample)
+            future_rewards = model_target.predict(state_next_sample,verbose=0)
             # Q value = reward + discount factor * expected future reward
             updated_q_values = rewards_sample + gamma * tf.reduce_max(
                 future_rewards, axis=1)
@@ -158,8 +158,8 @@ while True:  # Run until solved
             # update the the target network with new weights
             model_target.set_weights(model.get_weights())
             # Log details
-            template = "running reward: {:.2f} at episode {}, frame count {}"
-            print(template.format(running_reward, episode_count, frame_count))
+            template = "current dist: {:.2f} at episode {}, frame count {}, snake size:{}"
+            print(template.format(reward, episode_count, frame_count,snake_size))
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
@@ -168,7 +168,6 @@ while True:  # Run until solved
             del state_next_history[:1]
             del action_history[:1]
             del done_history[:1]
-
         if done:
             break
 
@@ -179,3 +178,6 @@ while True:  # Run until solved
     running_reward = np.mean(episode_reward_history)
 
     episode_count += 1
+    if snake_size>2:  # Condition to consider the task solved
+        print("Solved at episode {}!".format(episode_count))
+        break
