@@ -2,32 +2,29 @@ import numpy as np
 import random
 import time
 
+size=40
+
 class player:
     def __init__(self,x=10,y=10):
         self.cx = x
         self.cy = y
         self.px =x
         self.py =y
-    
-class apple:
-    def __init__(self):
-        self.x = 15
-        self.y = 15
 
-class board:
+class snake_board:
 
     def pepe(self):
-        m,k = random.randint(0,19),random.randint(0,19)
+        m,k = random.randint(0,size-1),random.randint(0,size-1)
         while self.board[m][k]!=0:
-            m,k = random.randint(0,19),random.randint(0,19)
+            m,k = random.randint(0,size-1),random.randint(0,size-1)
         return m,k
 
     def __init__(self,fpos=None):
         self.h = player()
-        self.board = np.zeros((20,20))
+        self.board = np.zeros((size,size))
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy]=1
-        self.getfrp = self.pepe() if fpos==None else lambda :(fpos.pop(0))
+        self.getfrp = lambda:self.pepe() if fpos==None else lambda :(fpos.pop(0))
         self.fx,self.fy = self.getfrp()
         self.board[self.fx][self.fy]=2
         self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
@@ -72,15 +69,16 @@ class board:
         self.h.cy+=diry
         self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
         #check for border collision
-        if self.h.cx>19:
+        if self.h.cx>size-1:
             self.h.cx=0
-        elif self.h.cy>19:
+        elif self.h.cy>size-1:
             self.h.cy=0
         elif self.h.cy<0:
-            self.h.cy=19
+            self.h.cy=size-1
         elif self.h.cx<0:
-            self.h.cx=19
+            self.h.cx=size-1
         #trailing segments occupy the preceeding ones place
+        m=0
         for m in range(1,len(self.segs)):
             self.segs[m].px=self.segs[m].cx
             self.segs[m].py=self.segs[m].cy
@@ -88,6 +86,25 @@ class board:
             self.segs[m].cy = self.segs[m-1].py
         #set last ones position as free
         self.board[self.segs[m].px][self.segs[m].py]=0
-        return board
-
-            
+    
+    def step(self,action:int):
+        self.move(action)
+        rew = 100-self.ps
+        eat = self.check_eat()
+        if eat:
+            rew+=20
+        d = self.check_death()
+        if d:
+            rew = 1
+        return self.board,rew,bool(len(self.segs)>=10),0
+    
+    def reset(self):
+        self.h = player()
+        self.board = np.zeros((size,size))
+        self.segs = [self.h]
+        self.board[self.h.cx][self.h.cy]=1
+        self.getfrp = lambda:self.pepe()
+        self.fx,self.fy = self.getfrp()
+        self.board[self.fx][self.fy]=2
+        self.ps=np.sqrt((self.fx-self.h.cx)**2 + (self.fy-self.h.cy)**2)
+        return self
