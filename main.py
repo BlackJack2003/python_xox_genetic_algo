@@ -3,7 +3,6 @@
 
 import numpy as np
 import random
-import numba
 import os
 from numba import jit
 
