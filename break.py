@@ -3,18 +3,18 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
+import sys,os
 
 # Configuration paramaters for the whole setup
 seed = 42
 gamma = 0.99  # Discount factor for past rewards
 epsilon = 1.0  # Epsilon greedy parameter
-epsilon_min = 0.1  # Minimum epsilon greedy parameter
+epsilon_min = 0.2  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
-epsilon_interval = (
-    epsilon_max - epsilon_min
-)  # Rate at which to reduce chance of random action being taken
+epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
 max_steps_per_episode = 10000
+rfc=0
 
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = snake.snake_board()
@@ -46,6 +46,13 @@ model = create_q_model()
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
 
+if len(sys.argv)>1:
+    try:
+        model.load_weights('./mod1/')
+        model_target.load_weights('./mod2/')
+    except:
+        print('no save found')
+
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
 
@@ -60,12 +67,12 @@ running_reward = 0
 episode_count = 0
 frame_count = 0
 # Number of frames to take random action and observe output
-epsilon_random_frames = 2000
+epsilon_random_frames = 5000
 # Number of frames for exploration
-epsilon_greedy_frames = 3000
+epsilon_greedy_frames = 10000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 1000
+max_memory_length = 10000
 # Train the model after 4 actions
 update_after_actions = 4
 # How often to update the target network
@@ -76,16 +83,13 @@ loss_function = keras.losses.Huber()
 while True:  # Run until solved
     state = np.array(env.reset())
     episode_reward = 0
-
     for timestep in range(1, max_steps_per_episode):
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
         frame_count += 1
-
-        # Use epsilon-greedy for exploration
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
-            # Take random action
             action = np.random.choice(num_actions)
+            rfc+=1
         else:
             # Predict action Q-values
             # From environment state
@@ -102,9 +106,7 @@ while True:  # Run until solved
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
         state_next = np.array(state_next)
-
         episode_reward += reward
-
         # Save actions and states in replay buffer
         action_history.append(action)
         state_history.append(state)
@@ -112,7 +114,6 @@ while True:  # Run until solved
         done_history.append(done)
         rewards_history.append(reward)
         state = state_next
-
         # Update every fourth frame and once batch size is over 32
         if frame_count % update_after_actions == 0 and len(done_history) > batch_size:
 
@@ -158,8 +159,13 @@ while True:  # Run until solved
             # update the the target network with new weights
             model_target.set_weights(model.get_weights())
             # Log details
-            template = "current dist: {:.2f} at episode {}, frame count {}, snake size:{}"
-            print(template.format(reward, episode_count, frame_count,snake_size))
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, snake size:{4}"
+            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,snake_size))
+            if frame_count%10000==0:
+                print("saving model...")
+                model.save_weights("./mod1/")
+                model_target.save_weights("./mod1/")
+
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
