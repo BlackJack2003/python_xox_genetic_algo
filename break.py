@@ -3,7 +3,10 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from keras import layers
-import sys,os
+from sys import argv
+import time
+
+stime=time.time()
 
 # Configuration paramaters for the whole setup
 seed = 42
@@ -46,10 +49,11 @@ model = create_q_model()
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
 
-if len(sys.argv)>1:
+if len(argv)>1:
     try:
         model.load_weights('./mod1/')
         model_target.load_weights('./mod2/')
+        print("\nLoaded Models Succesfully\n")
     except:
         print('no save found')
 
@@ -67,9 +71,9 @@ running_reward = 0
 episode_count = 0
 frame_count = 0
 # Number of frames to take random action and observe output
-epsilon_random_frames = 5000
+epsilon_random_frames = 7000
 # Number of frames for exploration
-epsilon_greedy_frames = 10000
+epsilon_greedy_frames = 12000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 10000
@@ -86,6 +90,13 @@ while True:  # Run until solved
     for timestep in range(1, max_steps_per_episode):
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
+        if frame_count%10000==0:
+            seconds = time.time()-stime
+            minutes, seconds = divmod(seconds, 60)
+            hours, minutes = divmod(minutes, 60)
+            print("saving model...\nCurrent Run Time:%d:%02d:%02d" % (hours, minutes, seconds))
+            model.save_weights("./mod1/")
+            model_target.save_weights("./mod2/")
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
             action = np.random.choice(num_actions)
@@ -160,11 +171,7 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5}"
-            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,snake_size,reward))
-            if frame_count%10000==0:
-                print("saving model...")
-                model.save_weights("./mod1/")
-                model_target.save_weights("./mod1/")
+            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,reward,snake_size))
 
 
         # Limit the state and reward history
