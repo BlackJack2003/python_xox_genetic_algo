@@ -159,8 +159,8 @@ while True:  # Run until solved
             # update the the target network with new weights
             model_target.set_weights(model.get_weights())
             # Log details
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, snake size:{4}"
-            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,snake_size))
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5}"
+            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,snake_size,reward))
             if frame_count%10000==0:
                 print("saving model...")
                 model.save_weights("./mod1/")
