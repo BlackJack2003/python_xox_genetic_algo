@@ -10,14 +10,15 @@ stime=time.time()
 
 # Configuration paramaters for the whole setup
 seed = 42
-gamma = 0.99  # Discount factor for past rewards
+gamma = 0.99  # init at .99 try reducing Discount factor for past rewards
 epsilon = 1.0  # Epsilon greedy parameter
-epsilon_min = 0.2  # Minimum epsilon greedy parameter
+epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
 epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
 max_steps_per_episode = 10000
 rfc=0
+ph=0
 
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = snake.snake_board()
@@ -49,14 +50,6 @@ model = create_q_model()
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
 
-if len(argv)>1:
-    try:
-        model.load_weights('./mod1/')
-        model_target.load_weights('./mod2/')
-        print("\nLoaded Models Succesfully\n")
-    except:
-        print('no save found')
-
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
 
@@ -67,13 +60,14 @@ state_next_history = []
 rewards_history = []
 done_history = []
 episode_reward_history = []
+deaths = 0
 running_reward = 0
 episode_count = 0
 frame_count = 0
 # Number of frames to take random action and observe output
-epsilon_random_frames = 7000
+epsilon_random_frames = 10000
 # Number of frames for exploration
-epsilon_greedy_frames = 12000
+epsilon_greedy_frames = 140000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 10000
@@ -83,6 +77,16 @@ update_after_actions = 4
 update_target_network = 1000
 # Using huber loss for stability
 loss_function = keras.losses.Huber()
+
+if len(argv)>1:
+    try:
+        model.load_weights('./mod1/')
+        model_target.load_weights('./mod2/')
+        epsilon_random_frames/=10
+        print("\nLoaded Models Succesfully\n")
+
+    except:
+        print('no save found')
 
 while True:  # Run until solved
     state = np.array(env.reset())
@@ -99,6 +103,8 @@ while True:  # Run until solved
             model_target.save_weights("./mod2/")
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
+            if epsilon>1:
+                epsilon-=0.3
             action = np.random.choice(num_actions)
             rfc+=1
         else:
@@ -113,7 +119,6 @@ while True:  # Run until solved
         # Decay probability of taking random action
         epsilon -= epsilon_interval / epsilon_greedy_frames
         epsilon = max(epsilon, epsilon_min)
-
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
         state_next = np.array(state_next)
@@ -170,8 +175,12 @@ while True:  # Run until solved
             # update the the target network with new weights
             model_target.set_weights(model.get_weights())
             # Log details
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5}"
-            print(template.format(np.mean(rewards_history), episode_count, frame_count,rfc,reward,snake_size))
+            mrh_ = np.mean(rewards_history)
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.3f},snake size:{5},epsilon:{6:0.4f},deaths: {7}"
+            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths))
+            if mrh_-ph <=0.01 and reward<(0.3*snake.size):
+                epsilon+=0.04
+            ph = mrh_
 
 
         # Limit the state and reward history
@@ -181,9 +190,9 @@ while True:  # Run until solved
             del state_next_history[:1]
             del action_history[:1]
             del done_history[:1]
-        if done:
+        if done==True:
+            deaths+=1
             break
-
     # Update running reward to check condition for solving
     episode_reward_history.append(episode_reward)
     if len(episode_reward_history) > 100:
@@ -191,6 +200,8 @@ while True:  # Run until solved
     running_reward = np.mean(episode_reward_history)
 
     episode_count += 1
-    if snake_size>2:  # Condition to consider the task solved
+    if snake_size>10:  # Condition to consider the task solved
+        model.save_weights("./mod1/")
+        model_target.save_weights("./mod2/")
         print("Solved at episode {}!".format(episode_count))
         break
