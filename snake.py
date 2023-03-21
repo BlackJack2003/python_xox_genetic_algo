@@ -15,6 +15,10 @@ class player:
         self.py =y
 
 class snake_board:
+
+    def elpepe(self):
+        return self.fpos.pop(0)
+
     def pepe(self):
         m,k = random.randint(0,size-1),random.randint(0,size-1)
         while self.board[m][k][0]!=0:
@@ -26,7 +30,11 @@ class snake_board:
         self.board = np.zeros((size,size,2),dtype=np.int16)
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=255
-        self.getfrp = lambda:self.pepe() if fpos==None else lambda :(fpos.pop(0))
+        if fpos==None:
+            self.getfrp = lambda:self.pepe() 
+        else:
+            self.fpos = fpos
+            self.getfrp = self.elpepe()
         self.fx,self.fy = self.getfrp()
         self.board[self.fx][self.fy][1]=255
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
@@ -103,12 +111,12 @@ class snake_board:
         d = self.check_death()
         return self.board,rew,d,self.size
     
-    def reset(self):
+    def reset(self,fpos:list=None):
         self.h = player()
         self.board = np.zeros((size,size,2),dtype=np.int16)
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=255
-        self.getfrp = lambda:self.pepe()
+        self.getfrp = lambda:self.pepe() if fpos==None else fpos.pop(0)
         self.fx,self.fy = self.getfrp()
         self.board[self.fx][self.fy][1]=255
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
