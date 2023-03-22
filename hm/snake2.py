@@ -2,11 +2,16 @@ import numpy as np
 import random
 import turtle,time
 
-size= 20
+size= 40
+
+hlook = np.array([255,255])
+flook = np.array([0,255])
+blook=np.array([255,0])
+blank=np.array([0,0])
 
 if __name__ =="__main__":
     size=10
-    fposy = [(5,5),(6,6),(5,6),(6,7)]
+    fposy = [(5,5),(6,6),(5,6),(6,7),(0,0)]
 
 rf = 2*size -1
 
@@ -20,7 +25,6 @@ class player:
         self.py =y
 
 class snake_board:
-
     def elpepe(self)->tuple:
         m = self.fpos[0]
         self.fpos.pop(0)
@@ -60,7 +64,6 @@ class snake_board:
     def check_eat(self)->bool:
         m = bool(self.h.cx==self.fx and self.h.cy==self.fy)
         if m==True:
-            self.board[self.fx][self.fy][1]=0
             self.fx,self.fy = self.getfrp()
             self.board[self.fx][self.fy][1]=255
             last = self.segs[-1]
@@ -71,6 +74,7 @@ class snake_board:
     
     #0 up,1 down 2 left 3 right
     def move(self,dd:int):
+        self.pd=self.ps
         if dd==0:
             dirx=1
             diry=0
@@ -89,7 +93,6 @@ class snake_board:
         self.h.py=self.h.cy
         self.h.cx-=dirx
         self.h.cy-=diry
-        self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         #check for border collision
         if self.h.cx>size-1:
             self.h.cx=0
@@ -99,6 +102,7 @@ class snake_board:
             self.h.cy=size-1
         elif self.h.cx<0:
             self.h.cx=size-1
+        self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         #trailing segments occupy the preceeding ones place
         self.board[self.h.cx][self.h.cy][0]=255
         self.board[self.h.cx][self.h.cy][1]=255
@@ -114,7 +118,7 @@ class snake_board:
     
     def step(self,action:int):
         self.move(action)
-        rew = (0.5*rf)-self.ps
+        rew = int(rf-self.ps)+len(self.segs)-1
         eat = self.check_eat()
         if eat:
             rew+=20
@@ -128,6 +132,7 @@ class snake_board:
         self.board = np.zeros((size,size,2),dtype=np.int16)
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=255
+        self.board[self.h.cx][self.h.cy][1]=255
         if fpos==None:
             self.getfrp = lambda:self.pepe()
         else:
@@ -140,6 +145,7 @@ class snake_board:
         return self.board
     
     def render(self,actions,fpos):
+        #work in progress
         wn = turtle.Screen()
         wn.title("Snake Game")
         wn.bgcolor("blue")
@@ -199,19 +205,22 @@ class snake_board:
         
     
     def __str__(self)->str:
-        tot = "\n    0 1 2 3 4 5 6 7 8 9"
+        tot = "\n    0 1 2 3 4 5 6 7 8 9\n    # # # # # # # # # #\n"
         for i in range(size):
             r=str(i)+"# "
             for j in range(size):
                 m = self.board[i][j]
                 r+=' '
                 if m[0]==0:
-                    if m[1]!=0:
+                    if m[1]==255:
                         r+='2'
                     else:
                         r+='0'
                 else:
-                    r+='1'
+                    if m[1]==0:
+                        r+='1'
+                    else:
+                        r+='H'
             tot+='\n'+r
         return tot+'\nSize: '+str(self.size)+'#'+str(self.h.cx)+'#'+str(self.h.cy)
     
@@ -220,8 +229,8 @@ if __name__ =="__main__":
     board.reset(fposy)
     print(board)
     #0 up,1 down 2 left 3 right
-    k =(0,2,1,3,0,2,1)
-    for i in k:
+    k =(0,2,1,3,0,3,1)
+    for it,i in enumerate(k):
         board.step(i)
-        print(board)
+        print(str(board)+'#i:'+str(it))
     

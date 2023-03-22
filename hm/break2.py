@@ -1,4 +1,4 @@
-import snake2
+import snake2 as snake
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -36,7 +36,7 @@ def create_q_model():
 
     layer4 = layers.Flatten()(layer3)
 
-    layer5 = layers.Dense(512, activation="relu")(layer4)
+    layer5 = layers.Dense(256, activation="relu")(layer4)
     action = layers.Dense(num_actions, activation="linear")(layer5)
 
     return keras.Model(inputs=inputs, outputs=action)

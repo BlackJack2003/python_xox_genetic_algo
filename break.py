@@ -179,9 +179,9 @@ while True:  # Run until solved
             mrh_ = np.mean(rewards_history)
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.3f},snake size:{5},epsilon:{6:0.4f},deaths: {7}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths))
-            if mrh_-ph <=0.01 and reward<(0.6*snake.size):
-                epsilon+=0.08
-                epsilon=min(epsilon_max,epsilon)
+            if mrh_-ph <=0.01 and reward<(0.5*snake.size):
+                epsilon+=0.2
+                epsilon= min(epsilon_max,epsilon)
             ph = mrh_
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
