@@ -1,4 +1,4 @@
-import snake
+import snake2
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -16,7 +16,7 @@ epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 1.0  # Maximum epsilon greedy parameter
 epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
-max_steps_per_episode = 10000
+max_steps_per_episode = 15000
 rfc=0
 ph=0
 fpos = [(0,0),(0,snake.size-1),(snake.size-1,0),(snake.size-1,snake.size-1),(snake.size//2,snake.size//2),(0,0),(0,snake.size-1),(snake.size-1,0),(snake.size-1,snake.size-1)]
@@ -30,13 +30,13 @@ def create_q_model():
     # Network defined by the Deepmind paper
     inputs = layers.Input(shape=(snake.size,snake.size,2,))
     # Convolutions on the frames on the screen
-    layer1 = layers.Conv2D(16, 8, strides=4, activation="relu")(inputs)
-    layer2 = layers.Conv2D(32, 4, strides=2, activation="relu")(layer1)
-    layer3 = layers.Conv2D(32, 3, strides=1, activation="relu")(layer2)
+    layer1 = layers.Conv2D(8, 8, strides=4, activation="relu")(inputs)
+    layer2 = layers.Conv2D(16, 4, strides=2, activation="relu")(layer1)
+    layer3 = layers.Conv2D(8, 3, strides=1, activation="relu")(layer2)
 
     layer4 = layers.Flatten()(layer3)
 
-    layer5 = layers.Dense(256, activation="relu")(layer4)
+    layer5 = layers.Dense(512, activation="relu")(layer4)
     action = layers.Dense(num_actions, activation="linear")(layer5)
 
     return keras.Model(inputs=inputs, outputs=action)
@@ -80,8 +80,8 @@ loss_function = keras.losses.Huber()
 
 if not len(argv)>1:
     try:
-        model.load_weights('./mod1/')
-        model_target.load_weights('./mod2/')
+        model.load_weights('./mod1hm/')
+        model_target.load_weights('./mod2hm/')
         epsilon_random_frames/=10
         print("\nLoaded Models Succesfully\n")
 
@@ -100,8 +100,8 @@ while True:  # Run until solved
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
             print("saving model...\nCurrent Run Time:%d:%02d:%02d" % (hours, minutes, seconds))
-            model.save_weights("./mod1/")
-            model_target.save_weights("./mod2/")
+            model.save_weights("./mod1hm/")
+            model_target.save_weights("./mod2hm/")
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
             if epsilon>1:
@@ -179,8 +179,8 @@ while True:  # Run until solved
             mrh_ = np.mean(rewards_history)
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.3f},snake size:{5},epsilon:{6:0.4f},deaths: {7}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths))
-            if mrh_-ph <=0.01 and reward<(0.6*snake.size):
-                epsilon+=0.08
+            if mrh_-ph <=0.01 and reward<(0.5*snake.size):
+                epsilon+=0.2
                 epsilon=min(epsilon_max,epsilon)
             ph = mrh_
         # Limit the state and reward history
@@ -201,7 +201,7 @@ while True:  # Run until solved
 
     episode_count += 1
     if snake_size>=len(fpos)-1 if fpos!=None else 5:  # Condition to consider the task solved
-        model.save_weights("./mod1/")
-        model_target.save_weights("./mod2/")
+        model.save_weights("./mod1hm/")
+        model_target.save_weights("./mod2hm/")
         print("Solved at episode {}!".format(episode_count))
         break

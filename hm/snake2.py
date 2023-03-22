@@ -2,7 +2,7 @@ import numpy as np
 import random
 import turtle,time
 
-size= 40
+size= 20
 
 if __name__ =="__main__":
     size=10
