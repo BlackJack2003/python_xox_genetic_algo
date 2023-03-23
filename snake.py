@@ -122,12 +122,12 @@ class snake_board:
         self.timestep+=1
         d = self.check_death() 
         if eat==True:
-            rew=40
+            rew=400
             self.timestep=0
         elif d:
-            rew=-20
+            rew=-500
         else:
-            rew=(rf-self.ps)-self.timestep
+            rew=(rf-self.ps)-(self.timestep/10)+(20/(10+np.exp(-self.size)))
         return self.board,int(rew),d,self.size
     
     def reset(self,fpos:list=None):
@@ -156,10 +156,10 @@ class snake_board:
         wn.title("Snake Game")
         wn.bgcolor("white")
         # the width and height can be put as user's choice
-        wn.setup(width=max(800,size*21), height=max(800,size*21))
+        wn.setup(width=max(500,size*21), height=max(500,size*21))
         head=turtle.Turtle()
         head.penup()
-        head.setpos((self.h.cx*20)-k,(20*self.h.cy)+k)
+        head.setpos((self.h.cy*20)-k,(-20*self.h.cx)+k)
         head.shape('square')
         head.color('black')
         segs=[head]
@@ -167,7 +167,7 @@ class snake_board:
         food.shape('square')
         food.color('blue')
         food.penup()
-        food.setpos((self.fx*20)-k,(self.fy*20)+k)
+        food.setpos((self.fy*20)-k,(self.fx*-20)+k)
         def add_seg(x,y):
             seg1 = turtle.Turtle()
             seg1.shape('square')

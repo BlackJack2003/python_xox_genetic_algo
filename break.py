@@ -20,7 +20,7 @@ batch_size = 32  # Size of batch taken from replay buffer
 max_steps_per_episode = 10000
 rfc=0
 ph=0
-fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1)]
+fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(0,0)]
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = snake.snake_board(fpos=fpos)
 # Warp the frames, grey scale, stake four frame and scale to smaller ratio
@@ -77,9 +77,7 @@ update_after_actions = 4
 # How often to update the target network
 update_target_network = 1000
 # Using huber loss for stability
-prie_ =[0]
-rewe_s=0
-rewe_m_s=5
+msnk=1
 loss_function = keras.losses.Huber()
 
 if not len(argv)>1:
@@ -126,6 +124,7 @@ while True:  # Run until solved
         epsilon = max(epsilon, epsilon_min)
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
+        msnk = max(msnk,snake_size)
         state_next = np.array(state_next)
         episode_reward += reward
         # Save actions and states in replay buffer
@@ -181,16 +180,8 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             mrh_ = np.mean(rewards_history)
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5},epsilon:{6:0.4f},deaths: {7},strikes:{8}"
-            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,strike))
-            if mrh_-ph <=0.01:
-                if strike<strike_l:
-                    strike+=1
-                else:
-                    strike=0
-                    epsilon+=0.1
-                    epsilon= min(0.6,epsilon)
-            ph = mrh_
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5},epsilon:{6:0.4f},deaths: {7},max_size:{8}"
+            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk))
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
             del rewards_history[:1]
