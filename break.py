@@ -78,6 +78,7 @@ update_after_actions = 4
 update_target_network = 1000
 # Using huber loss for stability
 msnk=1
+pmsnk = 1
 loss_function = keras.losses.Huber()
 
 if not len(argv)>1:
@@ -180,6 +181,13 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             mrh_ = np.mean(rewards_history)
+            if msnk<pmsnk:
+                if strike>strike_l:
+                    strike=0
+                    epsilon+=0.4
+                else:
+                    strike+=1
+            psnk=msnk
             msnk=snake_size
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5},epsilon:{6:0.4f},deaths: {7},max_size:{8}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk))
