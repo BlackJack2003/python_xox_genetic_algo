@@ -158,7 +158,7 @@ class snake_board:
         wn.setup(width=size*20, height=size*20)
         head=turtle.Turtle()
         head.penup()
-        head.setpos((size//2+1)*20-k,20*(size//2 + 1)-k)
+        head.setpos((size//2+1)*20+k,20*(size//2 + 1)-k)
         head.shape('square')
         head.color('black')
         segs=[head]
@@ -166,7 +166,7 @@ class snake_board:
         food.shape('square')
         food.color('blue')
         food.penup()
-        food.setpos(self.fx*20-k,self.fy*20-k)
+        food.setpos(self.fx*20+k,self.fy*20-k)
         def add_seg(x,y):
             seg1 = turtle.Turtle()
             seg1.shape('square')
@@ -177,11 +177,11 @@ class snake_board:
         while True:
             for _ in range(len(actions)):
                 self.step(actions[_])
-                food.setpos(self.fx*20-k,self.fy*20-k)
+                food.setpos(self.fx*20+k,self.fy*20-k)
                 if len(self.segs)>len(segs):
-                    segs.append(add_seg(self.segs[-1].cx*20-k,self.segs[-1].cy*20-k))
+                    segs.append(add_seg(self.segs[-1].cx*20+k,self.segs[-1].cy*20-k))
                 for i,v in enumerate(self.segs):
-                    segs[i].setpos(v.cx*20-k,v.cy*20-k)
+                    segs[i].setpos(v.cx*20+k,v.cy*20-k)
                 time.sleep(1)
                 wn.update()
             break
@@ -211,7 +211,7 @@ if __name__ =="__main__":
     board = snake_board()
     board.reset(fposy)
     #0 up,1 down 2 left 3 right
-    k =(0,2,1,3,0,3,1)
+    k =(0,2,1,3,0,3,1,1,2,2,1,3,3)
     board.render(k,fposy)
 
     
