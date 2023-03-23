@@ -156,11 +156,9 @@ class snake_board:
         wn.title("Snake Game")
         wn.bgcolor("white")
         # the width and height can be put as user's choice
-        wn.setup(width=max(500,size*21), height=max(500,size*21))
+        wn.setup(width=max(800,size*21), height=max(800,size*21))
         head=turtle.Turtle()
         head.penup()
-        self.h.cx=2
-        self.h.cy=2
         head.setpos((self.h.cx*20)-k,(20*self.h.cy)+k)
         head.shape('square')
         head.color('black')
@@ -180,12 +178,11 @@ class snake_board:
         while True:
             for _ in range(len(actions)):
                 self.step(actions[_])
-                food.setpos((self.fx*20)-k,(self.fy*20)+k)
-                print((self.fx*20)-k,(self.fy*20)+k)
+                food.setpos((self.fy*20)-k,(self.fx*-20)+k)
                 if len(self.segs)>len(segs):
-                    segs.append(add_seg((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k))
+                    segs.append(add_seg((self.segs[-1].cy*20)-k,(self.segs[-1].cx*-20)+k))
                 for i,v in enumerate(self.segs):
-                    segs[i].setpos((v.cx*20)-k,(v.cy*20)+k)
+                    segs[i].setpos((v.cy*20)-k,(v.cx*-20)+k)
                 print((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k)
                 time.sleep(1)
                 wn.update()
@@ -221,10 +218,9 @@ class snake_board:
 if __name__ =="__main__":
     size=30
     board = snake_board()
-    board.reset(fposy)
     print(board)
     #0 up,1 down 2 left 3 right
-    k =(0,2,1,3,0,3,1,1,2,2,1,3,3)
-    board.render(k,fposy)
+    k =(0,2,0,2,0,2,0,0,2,0,2,0,3)
+    board.render(k,fposy.copy())
 
     
