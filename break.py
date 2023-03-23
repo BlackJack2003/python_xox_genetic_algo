@@ -148,10 +148,7 @@ while True:  # Run until solved
             state_next_sample = np.array([state_next_history[i] for i in indices])
             rewards_sample = [rewards_history[i] for i in indices]
             action_sample = [action_history[i] for i in indices]
-            done_sample = tf.convert_to_tensor(
-                [float(done_history[i]) for i in indices]
-            )
-
+            done_sample = tf.convert_to_tensor([float(done_history[i]) for i in indices])
             # Build the updated Q-values for the sampled future states
             # Use the target model for stability
             future_rewards = model_target.predict(state_next_sample,verbose=0)
