@@ -11,7 +11,7 @@ blank=np.array([0,0])
 
 if __name__ =="__main__":
     size=10
-    fposy = [(5,5),(6,6),(5,6),(6,7),(0,0)]
+    fposy = [(5,5),(0,0),(6,6),(5,6),(6,7),(0,0)]
 
 rf = 2*size -1
 
@@ -149,17 +149,19 @@ class snake_board:
         return self.board
     
     def render(self,actions,fpos):
-        k = size//2
+        k = size*10
         wn = turtle.Screen()
         wn.tracer(0)
         self.reset(fpos)
         wn.title("Snake Game")
         wn.bgcolor("white")
         # the width and height can be put as user's choice
-        wn.setup(width=size*20, height=size*20)
+        wn.setup(width=max(500,size*21), height=max(500,size*21))
         head=turtle.Turtle()
         head.penup()
-        head.setpos((size//2+1)*20+k,20*(size//2 + 1)-k)
+        self.h.cx=2
+        self.h.cy=2
+        head.setpos((self.h.cx*20)-k,(20*self.h.cy)+k)
         head.shape('square')
         head.color('black')
         segs=[head]
@@ -167,7 +169,7 @@ class snake_board:
         food.shape('square')
         food.color('blue')
         food.penup()
-        food.setpos(self.fx*20+k,self.fy*20-k)
+        food.setpos((self.fx*20)-k,(self.fy*20)+k)
         def add_seg(x,y):
             seg1 = turtle.Turtle()
             seg1.shape('square')
@@ -178,17 +180,26 @@ class snake_board:
         while True:
             for _ in range(len(actions)):
                 self.step(actions[_])
-                food.setpos(self.fx*20+k,self.fy*20-k)
+                food.setpos((self.fx*20)-k,(self.fy*20)+k)
+                print((self.fx*20)-k,(self.fy*20)+k)
                 if len(self.segs)>len(segs):
-                    segs.append(add_seg(self.segs[-1].cx*20+k,self.segs[-1].cy*20-k))
+                    segs.append(add_seg((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k))
                 for i,v in enumerate(self.segs):
-                    segs[i].setpos(v.cx*20+k,v.cy*20-k)
+                    segs[i].setpos((v.cx*20)-k,(v.cy*20)+k)
+                print((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k)
                 time.sleep(1)
                 wn.update()
             break
     
     def __str__(self)->str:
-        tot = "\n    0 1 2 3 4 5 6 7 8 9\n    # # # # # # # # # #\n"
+
+        tot = "\n    "
+        for i in range(size):
+            tot+=' '+str(i)
+        tot+='\n     '
+        for i in range(size):
+            tot+=' #'
+        tot+="\n"
         for i in range(size):
             r=str(i)+"# "
             for j in range(size):
@@ -211,6 +222,7 @@ if __name__ =="__main__":
     size=30
     board = snake_board()
     board.reset(fposy)
+    print(board)
     #0 up,1 down 2 left 3 right
     k =(0,2,1,3,0,3,1,1,2,2,1,3,3)
     board.render(k,fposy)
