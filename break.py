@@ -91,7 +91,7 @@ if not len(argv)>1:
 
     except:
         print('no save found')
-
+snake_size=1
 while True:  # Run until solved
     m = fpos.copy()
     state = np.array(env.reset(m))
@@ -100,12 +100,20 @@ while True:  # Run until solved
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
         if frame_count%10000==0:
+            model.save_weights("./mod1/")
+            model_target.save_weights("./mod2/")
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
             print("saving model...\nCurrent Run Time:%d:%02d:%02d" % (hours, minutes, seconds))
-            model.save_weights("./mod1/")
-            model_target.save_weights("./mod2/")
+            if msnk<pmsnk:
+                if strike>strike_l:
+                    strike=0
+                    epsilon+=0.4
+                else:
+                    strike+=1
+            psnk=msnk
+            msnk=snake_size
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
             if epsilon>1:
@@ -183,16 +191,8 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             mrh_ = np.mean(rewards_history)
-            if msnk<pmsnk:
-                if strike>strike_l:
-                    strike=0
-                    epsilon+=0.4
-                else:
-                    strike+=1
-            psnk=msnk
-            msnk=snake_size
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5},epsilon:{6:0.4f},deaths: {7},max_size:{8}"
-            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,mtot))
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}"
+            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot))
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
             del rewards_history[:1]

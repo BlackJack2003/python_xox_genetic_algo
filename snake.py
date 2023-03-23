@@ -122,12 +122,12 @@ class snake_board:
         self.timestep+=1
         d = self.check_death() 
         if eat==True:
-            rew=400
+            rew=200
             self.timestep=0
         elif d:
-            rew=-500
+            rew=-100
         else:
-            rew=(rf-self.ps)-(self.timestep/20)+(20/(10+np.exp(-self.size)))
+            rew=(rf-self.ps)-(self.timestep/40)+(50/(10+np.exp(-self.size)))
         return self.board,int(rew),d,self.size
     
     def reset(self,fpos:list=None):
