@@ -100,6 +100,7 @@ while True:  # Run until solved
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
         if frame_count%10000==0:
+            msnk=1 #max size in save
             model.save_weights("./mod1/")
             model_target.save_weights("./mod2/")
             seconds = time.time()-stime
@@ -126,8 +127,10 @@ while True:  # Run until solved
         epsilon = max(epsilon, epsilon_min)
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
+
         msnk = max(msnk,snake_size)
         mtot = max(mtot,snake_size)
+        
         state_next = np.array(state_next)
         episode_reward += reward
         # Save actions and states in replay buffer
@@ -204,7 +207,6 @@ while True:  # Run until solved
             else:
                 strike+=1
     psnk=msnk
-    msnk=1
     episode_count += 1
     if snake_size>=len(fpos)-1 if fpos!=None else 5:  # Condition to consider the task solved
         model.save_weights("./mod1/")
