@@ -82,15 +82,14 @@ rewe_s=0
 rewe_m_s=5
 loss_function = keras.losses.Huber()
 
-if not len(argv)>1:
-    try:
-        model.load_weights('./mod1/')
-        model_target.load_weights('./mod2/')
-        epsilon_random_frames/=10
-        print("\nLoaded Models Succesfully\n")
+try:
+    model.load_weights('./mod1/')
+    model_target.load_weights('./mod2/')
+    epsilon_random_frames/=10
+    print("\nLoaded Models Succesfully\n")
 
-    except:
-        print('no save found')
+except:
+    print('no save found')
 
 while True:  # Run until solved
     m = fpos.copy()
@@ -127,6 +126,15 @@ while True:  # Run until solved
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
         state_next = np.array(state_next)
+        if reward - prie_[0] < 2:
+            if rewe_s<rewe_m_s:
+                rewe_s +=1
+            else:
+                rewe_s=0
+                epsilon+=0.2
+        prie_.append(reward)
+        if len(prie_)>5:
+            prie_.pop()
         episode_reward += reward
         # Save actions and states in replay buffer
         action_history.append(action)

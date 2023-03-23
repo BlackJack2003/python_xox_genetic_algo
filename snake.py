@@ -25,7 +25,6 @@ class player:
         self.py =y
 
 class snake_board:
-
     def elpepe(self)->tuple:
         m = self.fpos[0]
         self.fpos.pop(0)
@@ -53,6 +52,7 @@ class snake_board:
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         self.size=1
         self.pd = -1
+        self.timestep=0
 
     def check_death(self)->bool:
         cx = self.h.cx
@@ -118,14 +118,16 @@ class snake_board:
     
     def step(self,action:int):
         self.move(action)
-        rew = (0.5*rf)-self.ps+len(self.segs)+1
         eat = self.check_eat()
-        if eat:
-            rew+=20
+        self.timestep+=1
         d = self.check_death() 
-        if d:
-            rew=-50
-        return self.board,rew,d,self.size
+        if eat==True:
+            rew=40
+        elif d:
+            rew=-20
+        else:
+            rew=-1
+        return self.board,int(rew),d,self.size
     
     def reset(self,fpos:list=None):
         self.h = player()
@@ -142,66 +144,47 @@ class snake_board:
         self.board[self.fx][self.fy][1]=255
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         self.size=1
+        self.timestep=0
         return self.board
     
     def render(self,actions,fpos):
+        k = size//2
         wn = turtle.Screen()
+        wn.tracer(0)
+        self.reset(fpos)
         wn.title("Snake Game")
-        wn.bgcolor("blue")
+        wn.bgcolor("white")
         # the width and height can be put as user's choice
         wn.setup(width=size*20, height=size*20)
-        wn.tracer(0)
-        head = turtle.Turtle()
-        head.shape("square")
-        head.color("white")
+        head=turtle.Turtle()
         head.penup()
-        headx,heady = size//2 + 1,size//2 +1
-        head.goto(0,0)
+        head.setpos((size//2+1)*20-k,20*(size//2 + 1)-k)
+        head.shape('square')
+        head.color('black')
+        segs=[head]
         food = turtle.Turtle()
-        colors = random.choice(['red', 'green', 'black'])
-        shapes = 'square'
-        food.speed(0)
-        food.shape(shapes)
-        food.color(colors)
+        food.shape('square')
+        food.color('blue')
         food.penup()
-        fx,fy=fpos[0][0],fpos[0][1]
-        food.goto(fx*20,fy*20)
-        pen = turtle.Turtle()
-        pen.speed(0)
-        pen.shape("square")
-        pen.color("white")
-        pen.hideturtle()
-        pen.goto(0, 250)
-        pen.write("Score : 0  High Score : {}".format(len(actions)), align="center",
-                font=("candara", 24, "bold"))
-        pen.penup()
+        food.setpos(self.fx*20-k,self.fy*20-k)
+        def add_seg(x,y):
+            seg1 = turtle.Turtle()
+            seg1.shape('square')
+            seg1.color('black')
+            seg1.penup()
+            seg1.goto(x,y)
+            return seg1
         while True:
-            wn.update()
-            for i in range(len(actions)):
-                dd=actions[i]
-                print(dd)
-                if dd==0:
-                    dirx=1
-                    diry=0
-                elif dd==1:
-                    dirx=-1
-                    diry=0
-                elif dd==2:
-                    dirx=0
-                    diry=1
-                elif dd==3:
-                    dirx=0
-                    diry=-1
-                headx-=(dirx*20)
-                heady-=(diry*20)
-                head.goto(headx,heady)
-                if headx>=fpos[0][0]-30 or headx<=fpos[0][0]+30:
-                    if heady>=fpos[0][1]-30 or heady<=fpos[0][1]+30:
-                        return
-                time.sleep(0.5)
+            for _ in range(len(actions)):
+                self.step(actions[_])
+                food.setpos(self.fx*20-k,self.fy*20-k)
+                if len(self.segs)>len(segs):
+                    segs.append(add_seg(self.segs[-1].cx*20-k,self.segs[-1].cy*20-k))
+                for i,v in enumerate(self.segs):
+                    segs[i].setpos(v.cx*20-k,v.cy*20-k)
+                time.sleep(1)
+                wn.update()
             break
-        turtle.mainloop()
-        
     
     def __str__(self)->str:
         tot = "\n    0 1 2 3 4 5 6 7 8 9\n    # # # # # # # # # #\n"
@@ -224,12 +207,11 @@ class snake_board:
         return tot+'\nSize: '+str(self.size)+'#'+str(self.h.cx)+'#'+str(self.h.cy)
     
 if __name__ =="__main__":
+    size=30
     board = snake_board()
     board.reset(fposy)
-    print(board)
     #0 up,1 down 2 left 3 right
     k =(0,2,1,3,0,3,1)
-    for it,i in enumerate(k):
-        board.step(i)
-        print(str(board)+'#i:'+str(it))
+    board.render(k,fposy)
+
     
