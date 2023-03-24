@@ -82,15 +82,14 @@ pmsnk = 1
 mtot=1
 loss_function = keras.losses.Huber()
 
-if not len(argv)>1:
-    try:
-        model.load_weights('./mod1/')
-        model_target.load_weights('./mod2/')
-        epsilon_random_frames/=10
-        print("\nLoaded Models Succesfully\n")
-
-    except:
-        print('no save found')
+try:
+    model.load_weights('./mod1/')
+    model_target.load_weights('./mod2/')
+    epsilon_random_frames/=10
+    print("\nLoaded Models Succesfully\n")
+except:
+    print('no save found')
+    
 snake_size=1
 while True:  # Run until solved
     m = fpos.copy()
