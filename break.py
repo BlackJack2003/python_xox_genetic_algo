@@ -43,6 +43,7 @@ def create_q_model():
     return keras.Model(inputs=inputs, outputs=action)
 
 
+
 # The first model makes the predictions for Q-values which are used to
 # make a action.
 model = create_q_model()
@@ -82,13 +83,24 @@ pmsnk = 1
 mtot=1
 loss_function = keras.losses.Huber()
 
+'''
 try:
-    model.load_weights('./mod1/')
-    model_target.load_weights('./mod2/')
+    model.load_weights("./mod1/")
+    model.load_weights("./mod2/")
     epsilon_random_frames/=10
     print("\nLoaded Models Succesfully\n")
 except:
-    print('no save found')
+    print("No model")
+
+'''
+
+try:
+    model = keras.models.load_model('./mod1f/m1.h5')
+    model_target = keras.models.load_model('./mod2f/m2.h5')
+    epsilon_random_frames/=10
+    print("\nLoaded Models Succesfully\n")
+except Exception as e:
+    print('no save found due to:',e)
     
 snake_size=1
 while True:  # Run until solved
@@ -98,10 +110,10 @@ while True:  # Run until solved
     for timestep in range(1, max_steps_per_episode):
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
-        if frame_count%10000==0:
+        if frame_count%10000==0 and frame_count!=0:
             msnk=1 #max size in save
-            model.save_weights("./mod1/")
-            model_target.save_weights("./mod2/")
+            model.save("./mod1f/m1.h5")
+            model_target.save("./mod2f/m2.h5")
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
