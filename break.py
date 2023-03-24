@@ -82,7 +82,7 @@ msnk=1
 pmsnk = 1
 mtot=1
 loss_function = keras.losses.Huber()
-
+pshow =0
 '''
 try:
     model.load_weights("./mod1/")
@@ -94,15 +94,38 @@ except:
 
 '''
 
+
 try:
-    model = keras.models.load_model('./mod1f/m1.h5')
-    model_target = keras.models.load_model('./mod2f/m2.h5')
+    a = keras.models.load_model('./mod1f/m1.h5')
+    b = keras.models.load_model('./mod2f/m2.h5')
     epsilon_random_frames/=10
+    del model
+    del model_target
+    model=a
+    model_target=b
     print("\nLoaded Models Succesfully\n")
 except Exception as e:
     print('no save found due to:',e)
     
 snake_size=1
+
+def eval_mod():
+    fp =[(0,0),(snake.size//2,snake.size//2)]
+    _ = env.reset()
+    __ = []
+    for i in range(100):
+        state_tensor = tf.convert_to_tensor(_)
+        state_tensor = tf.expand_dims(state_tensor, 0)
+        action_probs = model(state_tensor, training=False)
+        # Take best action
+        action = tf.argmax(action_probs[0]).numpy()
+        __.append(action)
+        _, reward, done, snake_size = env.step(action)
+        if done:
+            break
+    
+    env.render(__,fpos=fp)
+
 while True:  # Run until solved
     m = fpos.copy()
     state = np.array(env.reset(m))
@@ -224,3 +247,5 @@ while True:  # Run until solved
         model_target.save_weights("./mod2/")
         print("Solved at episode {}!".format(episode_count))
         break
+
+

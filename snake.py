@@ -127,7 +127,7 @@ class snake_board:
         elif d:
             rew=-100
         else:
-            rew=(rf-self.ps)-(self.timestep/16)+(60/(10+np.exp(self.size-1)))
+            rew=-(self.ps+(self.timestep/8))
         return self.board,rew,d,self.size
     
     def reset(self,fpos:list=None):
