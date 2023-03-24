@@ -127,7 +127,7 @@ class snake_board:
         elif d:
             rew=-100
         else:
-            rew=(rf-self.ps)-(self.timestep/32)+(30/(10+np.exp(self.size-1)))
+            rew=(rf-self.ps)-(self.timestep/20)+(60/(10+np.exp(self.size-1)))
         return self.board,int(rew),d,self.size
     
     def reset(self,fpos:list=None):
@@ -184,7 +184,7 @@ class snake_board:
                 for i,v in enumerate(self.segs):
                     segs[i].setpos((v.cy*20)-k,(v.cx*-20)+k)
                 print((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k)
-                time.sleep(1)
+                time.sleep(0.5)
                 wn.update()
             break
     
@@ -220,7 +220,7 @@ if __name__ =="__main__":
     board = snake_board()
     print(board)
     #0 up,1 down 2 left 3 right
-    k =(0,2,0,2,0,2,0,0,2,0,2,0,3)
+    k =(0,2,0,2,0,2,0,2,0,2,0,2,2,0)
     board.render(k,fposy.copy())
 
     
