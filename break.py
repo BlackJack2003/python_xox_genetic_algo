@@ -5,6 +5,7 @@ from tensorflow import keras
 from keras import layers
 from sys import argv
 import time
+import pickle
 
 stime=time.time()
 strike_l=3
@@ -93,7 +94,7 @@ except:
     print("No model")
 
 '''
-
+updated_q_values = []
 
 try:
     a = keras.models.load_model('./mod1f/m1.h5')
@@ -103,6 +104,8 @@ try:
     del model_target
     model=a
     model_target=b
+    with open('qvf.pkl','rb') as k:
+        updated_q_values=pickle.load(k)
     print("\nLoaded Models Succesfully\n")
 except Exception as e:
     print('no save found due to:',e)
@@ -137,6 +140,8 @@ while True:  # Run until solved
             msnk=1 #max size in save
             model.save("./mod1f/m1.h5")
             model_target.save("./mod2f/m2.h5")
+            with open('qvf.pkl','wb') as k:
+                pickle.dump(updated_q_values,k)
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
