@@ -68,9 +68,9 @@ running_reward = 0
 episode_count = 0
 frame_count = 0
 # Number of frames to take random action and observe output
-epsilon_random_frames = 5000
+epsilon_random_frames = 10000
 # Number of frames for exploration
-epsilon_greedy_frames = 15000
+epsilon_greedy_frames = 20000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
 max_memory_length = 1000
@@ -135,6 +135,15 @@ def eval_mod():
     
     env.render(__,fpos=fp)
 
+def save_t():
+    model.save("./mod1f/m1.h5")
+    model_target.save("./mod2f/m2.h5")
+    with open('qvf.pkl','wb') as k:
+        pickle.dump(updated_q_values,k)
+    with open('opt.pkl','wb') as k:
+        optw = optimizer.get_weights()
+        pickle.dump(optw,k)
+
 while True:  # Run until solved
     m = fpos.copy()
     state = np.array(env.reset(m))
@@ -143,14 +152,8 @@ while True:  # Run until solved
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
         if frame_count%10000==0 and frame_count!=0:
+            save_t()
             msnk=1 #max size in save
-            model.save("./mod1f/m1.h5")
-            model_target.save("./mod2f/m2.h5")
-            with open('qvf.pkl','wb') as k:
-                pickle.dump(updated_q_values,k)
-            with open('opt.pkl','wb') as k:
-                optw = optimizer.get_weights()
-                pickle.dump(optw,k)
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
@@ -257,8 +260,7 @@ while True:  # Run until solved
     psnk=msnk
     episode_count += 1
     if snake_size>=len(fpos)-1 if fpos!=None else 5:  # Condition to consider the task solved
-        model.save_weights("./mod1/")
-        model_target.save_weights("./mod2/")
+        save_t()
         print("Solved at episode {}!".format(episode_count))
         break
 
