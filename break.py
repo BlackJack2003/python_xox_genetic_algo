@@ -151,7 +151,7 @@ while True:  # Run until solved
     for timestep in range(1, max_steps_per_episode):
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
-        if frame_count%10000==0 and frame_count!=0:
+        if frame_count%10000==0:
             save_t()
             msnk=1 #max size in save
             seconds = time.time()-stime
