@@ -97,19 +97,17 @@ except:
 updated_q_values = []
 
 try:
-    with open('opti.pkl','rb') as of_:
+    with open('opt.pkl','rb') as of_:
         k = pickle.load(of_)
-        optimizer = k
+        optimizer.set_weights(k)
     print("\nLoaded optimizer Succesfully\n")
-except:
-    print("\nOptimizer not loaded\n")
+except Exception as e:
+    print("\nOptimizer not loaded due to:"+str(e)+"\n")
 
 try:
     a = keras.models.load_model('./mod1f/m1.h5')
     b = keras.models.load_model('./mod2f/m2.h5')
     epsilon_random_frames/=10
-    del model
-    del model_target
     model=a
     model_target=b
     with open('qvf.pkl','rb') as k:
@@ -151,7 +149,8 @@ while True:  # Run until solved
             with open('qvf.pkl','wb') as k:
                 pickle.dump(updated_q_values,k)
             with open('opt.pkl','wb') as k:
-                pickle.dump(optimizer,k)
+                optw = optimizer.get_weights()
+                pickle.dump(optw,k)
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
