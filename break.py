@@ -97,6 +97,14 @@ except:
 updated_q_values = []
 
 try:
+    with open('opti.pkl','rb') as of_:
+        k = pickle.load(of_)
+        optimizer = k
+    print("\nLoaded optimizer Succesfully\n")
+except:
+    print("\nOptimizer not loaded\n")
+
+try:
     a = keras.models.load_model('./mod1f/m1.h5')
     b = keras.models.load_model('./mod2f/m2.h5')
     epsilon_random_frames/=10
@@ -142,6 +150,8 @@ while True:  # Run until solved
             model_target.save("./mod2f/m2.h5")
             with open('qvf.pkl','wb') as k:
                 pickle.dump(updated_q_values,k)
+            with open('opt.pkl','wb') as k:
+                pickle.dump(optimizer,k)
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
