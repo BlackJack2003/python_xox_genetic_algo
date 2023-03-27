@@ -97,9 +97,15 @@ except:
 updated_q_values = []
 
 try:
+    '''with open('optc.pkl','rb') as k:
+        st = pickle.load(k)
+        optimizer = keras.optimizers.Adam.from_config(st)
     with open('opt.pkl','rb') as of_:
         k = pickle.load(of_)
-        optimizer.set_weights(k)
+        optimizer.set_weights(k)'''
+    optimizer._create_all_weights(model.trainable_variables)
+    opt_weights = np.load("./opwt.npy", allow_pickle=True)
+    optimizer.set_weights(opt_weights)
     print("\nLoaded optimizer Succesfully\n")
 except Exception as e:
     print("\nOptimizer not loaded due to:"+str(e)+"\n")
@@ -135,14 +141,15 @@ def eval_mod():
     
     env.render(__,fpos=fp)
 
+
 def save_t():
     model.save("./mod1f/m1.h5")
     model_target.save("./mod2f/m2.h5")
     with open('qvf.pkl','wb') as k:
         pickle.dump(updated_q_values,k)
-    with open('opt.pkl','wb') as k:
-        optw = optimizer.get_weights()
-        pickle.dump(optw,k)
+    sym_wts = getattr(optimizer, 'weights')
+    weight_values = keras.backend.batch_get_value(sym_wts)
+    np.save("./opwt.npy",weight_values)
 
 while True:  # Run until solved
     m = fpos.copy()
