@@ -17,6 +17,7 @@ rf = 2*size -1
 
 class InvalidInputError(Exception):
     print("Invalid Input val")
+    
 class player:
     def __init__(self,x=size//2 +1,y=size//2 + 1):
         self.cx = x

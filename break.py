@@ -53,8 +53,6 @@ model = create_q_model()
 # loss between the Q-values is calculated the target Q-value is stable.
 model_target = create_q_model()
 
-optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
-
 
 # Experience replay buffers
 action_history = []
@@ -76,6 +74,7 @@ epsilon_greedy_frames = 20000
 max_memory_length = 1000
 # Train the model after 4 actions
 update_after_actions = 4
+ol = False
 # How often to update the target network
 update_target_network = 1000
 # Using huber loss for stability
@@ -84,31 +83,9 @@ pmsnk = 1
 mtot=1
 loss_function = keras.losses.Huber()
 pshow =0
-'''
-try:
-    model.load_weights("./mod1/")
-    model.load_weights("./mod2/")
-    epsilon_random_frames/=10
-    print("\nLoaded Models Succesfully\n")
-except:
-    print("No model")
-
-'''
 updated_q_values = []
 
-try:
-    '''with open('optc.pkl','rb') as k:
-        st = pickle.load(k)
-        optimizer = keras.optimizers.Adam.from_config(st)
-    with open('opt.pkl','rb') as of_:
-        k = pickle.load(of_)
-        optimizer.set_weights(k)'''
-    optimizer._create_all_weights(model.trainable_variables)
-    opt_weights = np.load("./opwt.npy", allow_pickle=True)
-    optimizer.set_weights(opt_weights)
-    print("\nLoaded optimizer Succesfully\n")
-except Exception as e:
-    print("\nOptimizer not loaded due to:"+str(e)+"\n")
+optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
 try:
     a = keras.models.load_model('./mod1f/m1.h5')
@@ -116,8 +93,6 @@ try:
     epsilon_random_frames/=10
     model=a
     model_target=b
-    with open('qvf.pkl','rb') as k:
-        updated_q_values=pickle.load(k)
     print("\nLoaded Models Succesfully\n")
 except Exception as e:
     print('no save found due to:',e)
@@ -141,15 +116,12 @@ def eval_mod():
     
     env.render(__,fpos=fp)
 
-
 def save_t():
     model.save("./mod1f/m1.h5")
     model_target.save("./mod2f/m2.h5")
-    with open('qvf.pkl','wb') as k:
-        pickle.dump(updated_q_values,k)
-    sym_wts = getattr(optimizer, 'weights')
-    weight_values = keras.backend.batch_get_value(sym_wts)
-    np.save("./opwt.npy",weight_values)
+    sym_wts = optimizer.get_weights()
+    print("Length:"+str(len(sym_wts)))
+    np.save("./opwt.npy",sym_wts)
 
 while True:  # Run until solved
     m = fpos.copy()
@@ -200,7 +172,6 @@ while True:  # Run until solved
         state = state_next
         # Update every fourth frame and once batch size is over 32
         if frame_count % update_after_actions == 0 and len(done_history) > batch_size:
-
             # Get indices of samples for replay buffers
             indices = np.random.choice(range(len(done_history)), size=batch_size)
 
@@ -226,7 +197,6 @@ while True:  # Run until solved
             with tf.GradientTape() as tape:
                 # Train the model on the states and updated Q-values
                 q_values = model(state_sample)
-
                 # Apply the masks to the Q-values to get the Q-value for action taken
                 q_action = tf.reduce_sum(tf.multiply(q_values, masks), axis=1)
                 # Calculate loss between new Q-value and old Q-value
@@ -243,6 +213,21 @@ while True:  # Run until solved
             mrh_ = np.mean(rewards_history)
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot))
+
+            if not ol:
+                try:
+                    ol = True
+                    opt_weights = np.load("./opwt.npy", allow_pickle=True)
+                    grad_vars = model.trainable_weights
+                    zero_grads = [tf.zeros_like(w) for w in grad_vars]
+                    optimizer.apply_gradients(zip(zero_grads, grad_vars))
+                    optimizer.set_weights(opt_weights)
+                    optimizer.apply_gradients(zip(grads, model.trainable_variables))
+                    print("\nWeight length:"+str(len(opt_weights))+"\n")
+                    print("\nLoaded optimizer Succesfully\n")
+                except Exception as e:
+                    print("\nOptimizer not loaded due to:"+str(e)+"\n")
+
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
             del rewards_history[:1]
