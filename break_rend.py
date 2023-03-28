@@ -18,7 +18,7 @@ epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 0.8  # Maximum epsilon greedy parameter
 epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
-max_steps_per_episode = 10000
+max_steps_per_episode = 2000
 rfc=0
 ph=0
 fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(0,0)]
@@ -71,7 +71,7 @@ epsilon_random_frames = 10000
 epsilon_greedy_frames = 20000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 50000
+max_memory_length = 20000
 # Train the model after 4 actions
 update_after_actions = 4
 ol = False
@@ -166,9 +166,12 @@ while True:  # Run until solved
         done_history.append(done)
         rewards_history.append(reward)
         state = state_next
-        if snake_size>2 and timestep<400:
+        if snake_size!=0 and snake_size%3==0 and timestep<400:
+            shownow = input(f"Show now with {timestep} steps:")
             env.render(actions=action_history[:timestep-1],fpos=fpos)
-            quit()
+            reward+=500
+            episode_reward += 500
+            rewards_history[-1]=reward
         # Update every fourth frame and once batch size is over 32
         if frame_count % update_after_actions == 0 and len(done_history) > batch_size:
             # Get indices of samples for replay buffers

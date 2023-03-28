@@ -94,7 +94,6 @@ class snake_board:
         self.h.py=self.h.cy
         self.h.cx-=dirx
         self.h.cy-=diry
-        self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         #check for border collision
         if self.h.cx>size-1:
             self.h.cx=0
@@ -122,13 +121,14 @@ class snake_board:
         eat = self.check_eat()
         self.timestep+=1
         d = self.check_death() 
+        self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         if eat==True:
             rew=200
             self.timestep=0
         elif d:
             rew=-100
         else:
-            rew=-(self.ps+(self.timestep/4))+5*np.exp(self.size-1)
+            rew=-2*self.ps
         return self.board,rew,d,self.size
     
     def reset(self,fpos:list=None):
@@ -176,20 +176,21 @@ class snake_board:
             seg1.penup()
             seg1.goto(x,y)
             return seg1
-        while True:
-            k_ = len(actions)
-            for _ in range(len(actions)):
-                self.step(actions[_])
-                food.setpos((self.fy*20)-k,(self.fx*-20)+k)
-                if len(self.segs)>len(segs):
-                    segs.append(add_seg((self.segs[-1].cy*20)-k,(self.segs[-1].cx*-20)+k))
-                for i,v in enumerate(self.segs):
-                    segs[i].setpos((v.cy*20)-k,(v.cx*-20)+k)
-                print("Remianing:",k_)
-                k_-=1
-                time.sleep(0.5)
-                wn.update()
-            break
+        k_ = len(actions)
+        for _ in range(len(actions)):
+            self.step(actions[_])
+            food.setpos((self.fy*20)-k,(self.fx*-20)+k)
+            if len(self.segs)>len(segs):
+                segs.append(add_seg((self.segs[-1].cy*20)-k,(self.segs[-1].cx*-20)+k))
+            for i,v in enumerate(self.segs):
+                segs[i].setpos((v.cy*20)-k,(v.cx*-20)+k)
+            print("Remianing:"+str(k_-_)+" Fpos:"+str(self.fy)+","+str(self.fx))
+            k_-=1
+            time.sleep(0.5)
+            wn.update()
+        _ = input()
+        turtle.bye()
+        
     
     def __str__(self)->str:
 
