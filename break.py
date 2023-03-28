@@ -18,7 +18,7 @@ epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 0.8  # Maximum epsilon greedy parameter
 epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
-max_steps_per_episode = 12000
+max_steps_per_episode = 10000
 rfc=0
 ph=0
 fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(0,0)]
@@ -71,7 +71,7 @@ epsilon_random_frames = 10000
 epsilon_greedy_frames = 20000
 # Maximum replay length
 # Note: The Deepmind paper suggests 1000000 however this causes memory issues
-max_memory_length = 1000
+max_memory_length = 50000
 # Train the model after 4 actions
 update_after_actions = 4
 ol = False
@@ -119,9 +119,6 @@ def eval_mod():
 def save_t():
     model.save("./mod1f/m1.h5")
     model_target.save("./mod2f/m2.h5")
-    sym_wts = optimizer.get_weights()
-    print("Length:"+str(len(sym_wts)))
-    np.save("./opwt.npy",sym_wts)
 
 while True:  # Run until solved
     m = fpos.copy()
@@ -213,20 +210,6 @@ while True:  # Run until solved
             mrh_ = np.mean(rewards_history)
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot))
-
-            if not ol:
-                try:
-                    ol = True
-                    opt_weights = np.load("./opwt.npy", allow_pickle=True)
-                    grad_vars = model.trainable_weights
-                    zero_grads = [tf.zeros_like(w) for w in grad_vars]
-                    optimizer.apply_gradients(zip(zero_grads, grad_vars))
-                    optimizer.set_weights(opt_weights)
-                    optimizer.apply_gradients(zip(grads, model.trainable_variables))
-                    print("\nWeight length:"+str(len(opt_weights))+"\n")
-                    print("\nLoaded optimizer Succesfully\n")
-                except Exception as e:
-                    print("\nOptimizer not loaded due to:"+str(e)+"\n")
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:

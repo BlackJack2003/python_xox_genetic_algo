@@ -128,7 +128,7 @@ class snake_board:
         elif d:
             rew=-100
         else:
-            rew=-(self.ps+(self.timestep/8))+5*np.exp(self.size-1)
+            rew=-(self.ps+(self.timestep/4))+5*np.exp(self.size-1)
         return self.board,rew,d,self.size
     
     def reset(self,fpos:list=None):
@@ -177,6 +177,7 @@ class snake_board:
             seg1.goto(x,y)
             return seg1
         while True:
+            k_ = len(actions)
             for _ in range(len(actions)):
                 self.step(actions[_])
                 food.setpos((self.fy*20)-k,(self.fx*-20)+k)
@@ -184,7 +185,8 @@ class snake_board:
                     segs.append(add_seg((self.segs[-1].cy*20)-k,(self.segs[-1].cx*-20)+k))
                 for i,v in enumerate(self.segs):
                     segs[i].setpos((v.cy*20)-k,(v.cx*-20)+k)
-                print((self.segs[-1].cx*20)-k,(self.segs[-1].cy*20)+k)
+                print("Remianing:",k_)
+                k_-=1
                 time.sleep(0.5)
                 wn.update()
             break
