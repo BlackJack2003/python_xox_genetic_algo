@@ -169,11 +169,6 @@ while True:  # Run until solved
         done_history.append(done)
         rewards_history.append(reward)
         state = state_next
-        if snake_size!=0 and snake_size%3==0 and timestep<400:
-            shownow = input(f"Show now with {timestep} steps:")
-            reward+=500
-            episode_reward += 500
-            rewards_history[-1]=reward
         # Update every fourth frame and once batch size is over 32
         if frame_count % update_after_actions == 0 and len(done_history) > batch_size:
             # Get indices of samples for replay buffers
