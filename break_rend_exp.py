@@ -34,12 +34,12 @@ def create_q_model():
     # Convolutions on the frames on the screen
     layer1 = layers.Conv2D(16, 8, strides=4, activation="relu")(inputs)
     layer2 = layers.Conv2D(32, 4, strides=2, activation="relu")(layer1)
-    layer3 = layers.Conv2D(32, 3, strides=1, activation="relu")(layer2)
-
-    layer4 = layers.Flatten()(layer3)
-
+    layer3 = layers.Conv2D(16, 3, strides=1, activation="relu")(layer2)
+    layer3p = layers.MaxPool2D((2,2,))(layer2)
+    layer4 = layers.Flatten()(layer3p)
     layer5 = layers.Dense(256, activation="relu")(layer4)
-    action = layers.Dense(num_actions, activation="linear")(layer5)
+    layer6 = layers.Dense(128, activation="relu")(layer5)
+    action = layers.Dense(num_actions, activation="linear")(layer6)
 
     return keras.Model(inputs=inputs, outputs=action)
 
@@ -88,15 +88,15 @@ updated_q_values = []
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
 try:
-    a = keras.models.load_model('./mod1f/m1.h5')
-    b = keras.models.load_model('./mod2f/m2.h5')
+    a = keras.models.load_model('./mod1/m1.h5')
+    b = keras.models.load_model('./mod2/m2.h5')
     epsilon_random_frames/=10
     model=a
     model_target=b
     print("\nLoaded Models Succesfully\n")
 except Exception as e:
     print('no save found due to:',e)
-    
+
 snake_size=1
 
 def eval_mod():
@@ -117,8 +117,8 @@ def eval_mod():
     env.render(__,fpos=fp)
 
 def save_t():
-    model.save("./mod1f/m1.h5")
-    model_target.save("./mod2f/m2.h5")
+    model.save("./mod1/m1.h5")
+    model_target.save("./mod2/m2.h5")
 
 while True:  # Run until solved
     m = fpos.copy()

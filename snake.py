@@ -58,6 +58,8 @@ class snake_board:
     def check_death(self)->bool:
         cx = self.h.cx
         cy = self.h.cy
+        if cx < 0 or cx > size-1 or cy<0 or cy> size-1:
+            return True
         for m in range(1,len(self.segs)):
             if self.segs[m].cx == cx and self.segs[m].cy == cy:
                 return True
@@ -94,15 +96,9 @@ class snake_board:
         self.h.py=self.h.cy
         self.h.cx-=dirx
         self.h.cy-=diry
+        if self.h.cx < 0 or self.h.cx > size-1 or self.h.cy<0 or self.h.cy> size-1:
+            return
         #check for border collision
-        if self.h.cx>size-1:
-            self.h.cx=0
-        elif self.h.cy>size-1:
-            self.h.cy=0
-        elif self.h.cy<0:
-            self.h.cy=size-1
-        elif self.h.cx<0:
-            self.h.cx=size-1
         #trailing segments occupy the preceeding ones place
         self.board[self.h.cx][self.h.cy][0]=255
         self.board[self.h.cx][self.h.cy][1]=255
