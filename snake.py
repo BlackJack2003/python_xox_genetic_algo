@@ -58,8 +58,6 @@ class snake_board:
     def check_death(self)->bool:
         cx = self.h.cx
         cy = self.h.cy
-        if cx < 0 or cx > size-1 or cy<0 or cy> size-1:
-            return True
         for m in range(1,len(self.segs)):
             if self.segs[m].cx == cx and self.segs[m].cy == cy:
                 return True
@@ -72,6 +70,7 @@ class snake_board:
             self.board[self.fx][self.fy][1]=255
             last = self.segs[-1]
             self.board[last.px][last.py][0]=255
+            self.board[last.px][last.py][1]=255
             self.segs.append(player(last.px,last.py))
             self.size+=1
         return m
@@ -96,13 +95,18 @@ class snake_board:
         self.h.py=self.h.cy
         self.h.cx-=dirx
         self.h.cy-=diry
-        if self.h.cx < 0 or self.h.cx > size-1 or self.h.cy<0 or self.h.cy> size-1:
-            return
+        if self.h.cx < 0:
+            self.h.cx=size-1
+        elif self.h.cx > size-1:
+            self.h.cx=0
+        elif self.h.cy<0:
+            self.h.cy=size-1
+        elif self.h.cy> size-1:
+            self.h.cy=0
         #check for border collision
         #trailing segments occupy the preceeding ones place
         self.board[self.h.cx][self.h.cy][0]=255
         self.board[self.h.cx][self.h.cy][1]=255
-        self.board[self.h.px][self.h.py][1]=0
         m=0
         for m in range(1,len(self.segs)):
             self.segs[m].px=self.segs[m].cx
@@ -111,6 +115,7 @@ class snake_board:
             self.segs[m].cy = self.segs[m-1].py
         #set last ones position as free
         self.board[self.segs[-1].px][self.segs[-1].py][0]=0
+        self.board[self.segs[-1].px][self.segs[-1].py][1]=0
     
     def step(self,action:int):
         self.move(action)
@@ -119,10 +124,10 @@ class snake_board:
         d = self.check_death() 
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         if eat==True:
-            rew=200
+            rew=100
             self.timestep=0
         elif d:
-            rew=-100
+            rew=-400
         else:
             rew=-2*self.ps
         return self.board,rew,d,self.size
@@ -130,6 +135,7 @@ class snake_board:
     def reset(self,fpos:list=None):
         self.h = player()
         self.board = np.zeros((size,size,2),dtype=np.int16)
+        m = np.ones(size,dtype=np.int16)
         self.segs = [self.h]
         self.board[self.h.cx][self.h.cy][0]=255
         self.board[self.h.cx][self.h.cy][1]=255
@@ -186,7 +192,6 @@ class snake_board:
             wn.update()
         _ = input()
         turtle.bye()
-        
     
     def __str__(self)->str:
 
@@ -209,18 +214,21 @@ class snake_board:
                         r+='0'
                 else:
                     if m[1]==0:
-                        r+='1'
+                        r+='#'
                     else:
                         r+='H'
             tot+='\n'+r
         return tot+'\nSize: '+str(self.size)+'#'+str(self.h.cx)+'#'+str(self.h.cy)
     
 if __name__ =="__main__":
-    size=30
-    board = snake_board()
-    print(board)
+    env = snake_board()
+    env.reset(fposy)
     #0 up,1 down 2 left 3 right
     k =(0,2,0,2,0,2,0,2,0,2,0,2,2,0)
-    board.render(k,fposy.copy())
+    for m in k:
+        env.step(m)
+        print(env)
+
+
 
     

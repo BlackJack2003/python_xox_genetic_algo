@@ -35,8 +35,7 @@ def create_q_model():
     layer1 = layers.Conv2D(16, 8, strides=4, activation="relu")(inputs)
     layer2 = layers.Conv2D(32, 4, strides=2, activation="relu")(layer1)
     layer3 = layers.Conv2D(16, 3, strides=1, activation="relu")(layer2)
-    layer3p = layers.MaxPool2D((2,2,))(layer2)
-    layer4 = layers.Flatten()(layer3p)
+    layer4 = layers.Flatten()(layer3)
     layer5 = layers.Dense(256, activation="relu")(layer4)
     layer6 = layers.Dense(128, activation="relu")(layer5)
     action = layers.Dense(num_actions, activation="linear")(layer6)
@@ -83,6 +82,7 @@ pmsnk = 1
 mtot=1
 loss_function = keras.losses.Huber()
 pshow =0
+max_f_d=0
 updated_q_values = []
 
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
@@ -156,7 +156,7 @@ while True:  # Run until solved
         state_next, reward, done, snake_size = env.step(action)
         msnk = max(msnk,snake_size)
         mtot = max(mtot,snake_size)
-        
+        max_f_d = max(timestep,max_f_d)
         state_next = np.array(state_next)
         episode_reward += reward
         # Save actions and states in replay buffer
@@ -166,12 +166,6 @@ while True:  # Run until solved
         done_history.append(done)
         rewards_history.append(reward)
         state = state_next
-        if snake_size!=0 and snake_size%3==0 and timestep<400:
-            shownow = input(f"Show now with {timestep} steps:")
-            env.render(actions=action_history[:timestep-1],fpos=fpos)
-            reward+=500
-            episode_reward += 500
-            rewards_history[-1]=reward
         # Update every fourth frame and once batch size is over 32
         if frame_count % update_after_actions == 0 and len(done_history) > batch_size:
             # Get indices of samples for replay buffers
@@ -213,8 +207,8 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             mrh_ = np.mean(rewards_history)
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}"
-            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot))
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}, max num of frame:{10}"
+            print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot,max_f_d))
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
