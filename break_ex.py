@@ -18,7 +18,7 @@ epsilon_min = 0.1  # Minimum epsilon greedy parameter
 epsilon_max = 0.8  # Maximum epsilon greedy parameter
 epsilon_interval = (epsilon_max - epsilon_min)  # Rate at which to reduce chance of random action being taken
 batch_size = 32  # Size of batch taken from replay buffer
-max_steps_per_episode = 2000
+max_steps_per_episode = 2500
 rfc=0
 ph=0
 fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(0,0)]
@@ -75,7 +75,7 @@ max_memory_length = 20000
 update_after_actions = 4
 ol = False
 # How often to update the target network
-update_target_network = 1000
+update_target_network = 900
 # Using huber loss for stability
 msnk=1
 pmsnk = 1

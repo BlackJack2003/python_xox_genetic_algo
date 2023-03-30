@@ -13,7 +13,7 @@ if __name__ =="__main__":
     size=10
     fposy = [(5,5),(0,0),(6,6),(5,6),(6,7),(0,0)]
 
-rf = 2*size -1
+rf = 10/(2*size -1)
 
 class InvalidInputError(Exception):
     print("Invalid Input val")
@@ -122,13 +122,14 @@ class snake_board:
         eat = self.check_eat()
         self.timestep+=1
         d = self.check_death() 
-        self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
+        _ =abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         if eat==True:
-            rew=50
+            rew=50*(self.size-1)
         elif d:
             rew=-40
         else:
-            rew=-1*self.ps
+            rew=(-1*rf*self.ps) + 1 if _ < self.ps else -1
+        self.ps = _
         return self.board,rew,d,self.size
     
     def reset(self,fpos:list=None):
