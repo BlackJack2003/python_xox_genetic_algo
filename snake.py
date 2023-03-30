@@ -107,6 +107,7 @@ class snake_board:
         #trailing segments occupy the preceeding ones place
         self.board[self.h.cx][self.h.cy][0]=255
         self.board[self.h.cx][self.h.cy][1]=255
+        self.board[self.h.px][self.h.py][1]=0
         m=0
         for m in range(1,len(self.segs)):
             self.segs[m].px=self.segs[m].cx
@@ -115,7 +116,6 @@ class snake_board:
             self.segs[m].cy = self.segs[m-1].py
         #set last ones position as free
         self.board[self.segs[-1].px][self.segs[-1].py][0]=0
-        self.board[self.segs[-1].px][self.segs[-1].py][1]=0
     
     def step(self,action:int):
         self.move(action)
@@ -124,12 +124,11 @@ class snake_board:
         d = self.check_death() 
         self.ps=abs(self.fx-self.h.cx) + abs(self.fy-self.h.cy)
         if eat==True:
-            rew=100
-            self.timestep=0
+            rew=50
         elif d:
-            rew=-400
+            rew=-40
         else:
-            rew=-2*self.ps
+            rew=-1*self.ps
         return self.board,rew,d,self.size
     
     def reset(self,fpos:list=None):

@@ -120,10 +120,13 @@ def save_t():
     model.save("./mod1/m1.h5")
     model_target.save("./mod2/m2.h5")
 
+csh = 1
+
 while True:  # Run until solved
     m = fpos.copy()
     state = np.array(env.reset(m))
     episode_reward = 0
+    csh = 1
     for timestep in range(1, max_steps_per_episode):
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
@@ -155,7 +158,9 @@ while True:  # Run until solved
         # Apply the sampled action in our environment
         state_next, reward, done, snake_size = env.step(action)
         msnk = max(msnk,snake_size)
-        mtot = max(mtot,snake_size)
+        if mtot<snake_size:
+            reward+=50
+            mtot = snake_size
         max_f_d = max(timestep,max_f_d)
         state_next = np.array(state_next)
         episode_reward += reward
