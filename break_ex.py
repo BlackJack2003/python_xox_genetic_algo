@@ -212,7 +212,7 @@ while True:  # Run until solved
             model_target.set_weights(model.get_weights())
             # Log details
             mrh_ = np.mean(rewards_history)
-            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.4f},deaths: {7},current save:{8} ,max_size:{9}, max num of frame:{10}"
+            template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.2f},deaths: {7},current save:{8} ,max_size:{9}, max num of frame:{10}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot,max_f_d))
 
         # Limit the state and reward history
