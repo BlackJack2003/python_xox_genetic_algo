@@ -21,7 +21,7 @@ batch_size = 32  # Size of batch taken from replay buffer
 max_steps_per_episode = 2500
 rfc=0
 ph=0
-fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(0,0)]
+fpos = [(1,1),(1,snake.size-2),(snake.size-2,1),(snake.size-2,snake.size-2),(snake.size//2,snake.size//2),(1,1),(1,snake.size-2),(snake.size-1,0),(snake.size-1,snake.size-1),(2,2)]
 # Use the Baseline Atari environment because of Deepmind helper functions
 env = snake.snake_board(fpos=fpos)
 # Warp the frames, grey scale, stake four frame and scale to smaller ratio
@@ -73,7 +73,8 @@ epsilon_greedy_frames = 20000
 max_memory_length = 20000
 # Train the model after 4 actions
 update_after_actions = 4
-ol = False
+ol = 0
+opl = False
 # How often to update the target network
 update_target_network = 900
 # Using huber loss for stability
@@ -86,6 +87,8 @@ max_f_d=0
 updated_q_values = []
 
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
+
+
 
 try:
     a = keras.models.load_model('./mod1/m1.h5')
@@ -119,6 +122,9 @@ def eval_mod():
 def save_t():
     model.save("./mod1/m1.h5")
     model_target.save("./mod2/m2.h5")
+    if opl:
+        with open('./opt.pkl', 'wb') as f:
+            pickle.dump(optimizer.get_weights(),f)
 
 csh = 1
 
@@ -137,6 +143,21 @@ while True:  # Run until solved
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
             print("saving model...\nCurrent Run Time:%d:%02d:%02d" % (hours, minutes, seconds))
+            if ol!=2:
+                ol+=1
+            else:
+                if ol==2:
+                    print("/n Trying to Load optimizer\n")
+                    try:
+                        with open('./opt.pkl','rb') as f:
+                            wts = pickle.load(f)
+                        optimizer.set_weights(wts)
+                        print("\nOptimizer loaded\n")
+                    except Exception as e:
+                        print("\nOptimizer not loaded due to:\n"+str(e))
+                    opl=True
+                ol+=1
+
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
             if epsilon>1:
@@ -214,6 +235,9 @@ while True:  # Run until solved
             mrh_ = np.mean(rewards_history)
             template = "avg rew: {0:.2f} at episode {1}, frame count {2},Num rand frame: {3}, reward: {4:.2f},snake size:{5},epsilon:{6:0.2f},deaths: {7},current save:{8} ,max_size:{9}, max num of frame:{10}"
             print(template.format(mrh_, episode_count, frame_count,rfc,reward,snake_size,epsilon,deaths,msnk,mtot,max_f_d))
+
+        
+
 
         # Limit the state and reward history
         if len(rewards_history) > max_memory_length:
