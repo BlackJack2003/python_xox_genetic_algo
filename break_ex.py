@@ -88,18 +88,6 @@ updated_q_values = []
 
 optimizer = keras.optimizers.Adam(learning_rate=0.00025, clipnorm=1.0)
 
-
-
-try:
-    a = keras.models.load_model('./mod1/m1.h5')
-    b = keras.models.load_model('./mod2/m2.h5')
-    epsilon_random_frames/=10
-    model=a
-    model_target=b
-    print("\nLoaded Models Succesfully\n")
-except Exception as e:
-    print('no save found due to:',e)
-
 snake_size=1
 
 def eval_mod():
@@ -155,6 +143,15 @@ while True:  # Run until solved
                         print("\nOptimizer loaded\n")
                     except Exception as e:
                         print("\nOptimizer not loaded due to:\n"+str(e))
+                    try:
+                        a = keras.models.load_model('./mod1/m1.h5')
+                        b = keras.models.load_model('./mod2/m2.h5')
+                        epsilon_random_frames/=10
+                        model=a
+                        model_target=b
+                        print("\nLoaded Models Succesfully\n")
+                    except Exception as e:
+                        print('no save found due to:',e)
                     opl=True
                 ol+=1
 
