@@ -155,7 +155,7 @@ while True:  # Run until solved
                     except Exception as e:
                         print('no save found due to:',e)
                     opl=True
-                ol+=1
+                    ol+=1
 
         frame_count += 1
         if frame_count < epsilon_random_frames or epsilon > np.random.rand(1)[0]:
