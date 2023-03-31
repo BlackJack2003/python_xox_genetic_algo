@@ -125,12 +125,14 @@ while True:  # Run until solved
         # env.render(); Adding this line would show the attempts
         # of the agent in a pop up window.
         if frame_count%10000==0:
-            save_t()
+            if opl==True:
+                print("\nSaving model...\n")
+                save_t()
             msnk=1 #max size in save
             seconds = time.time()-stime
             minutes, seconds = divmod(seconds, 60)
             hours, minutes = divmod(minutes, 60)
-            print("saving model...\nCurrent Run Time:%d:%02d:%02d" % (hours, minutes, seconds))
+            print("\nCurrent Run Time:%d:%02d:%02d\n" % (hours, minutes, seconds))
             if ol!=2:
                 ol+=1
             else:
